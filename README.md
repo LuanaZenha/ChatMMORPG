@@ -86,7 +86,7 @@ Inicie o servidor com:
 
 bash
 Copiar código
-uvicorn uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Depois, abra o navegador em:
 
 👉 http://localhost:8000
