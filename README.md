@@ -85,8 +85,8 @@ pip install -r requirements.txt
 Inicie o servidor com:
 
 bash
-Copiar código
-uvicorn: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+Copiar código:
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Depois, abra o navegador em:
 
 👉 http://localhost:8000
