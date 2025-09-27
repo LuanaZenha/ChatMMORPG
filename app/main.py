@@ -13,7 +13,6 @@ from bson import ObjectId
 from datetime import datetime, timezone
 from pathlib import Path
 
-# carrega .env
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(dotenv_path=ROOT / ".env")
 
@@ -29,7 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- DB helpers ---
 _client: Optional[AsyncIOMotorClient] = None
 
 
@@ -57,7 +55,6 @@ def serialize(doc: dict) -> dict:
     return d
 
 
-# --- WebSocket room manager ---
 class WSManager:
     def __init__(self):
         self.rooms: Dict[str, Set[WebSocket]] = {}
@@ -83,7 +80,6 @@ class WSManager:
 
 manager = WSManager()
 
-# --- Static client ---
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
@@ -92,7 +88,6 @@ async def index():
     return FileResponse("app/static/index.html")
 
 
-# --- REST ---
 @app.get("/rooms/{room}/messages")
 async def get_messages(
     room: str, limit: int = Query(20, ge=1, le=100), before_id: str | None = Query(None)
@@ -128,12 +123,11 @@ async def post_message(
     return serialize(doc)
 
 
-# --- WS ---
 @app.websocket("/ws/{room}")
 async def ws_room(ws: WebSocket, room: str):
     await manager.connect(room, ws)
     try:
-        # histórico inicial
+        
         cursor = db()["messages"].find({"room": room}).sort("_id", -1).limit(20)
         items = [serialize(d) async for d in cursor]
         items.reverse()

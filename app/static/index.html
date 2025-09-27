@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-      /* --- TEMA: PERGAMINHO ANTIGO / DIÁRIO DE AVENTURA --- */
       body {
           font-family: 'Merriweather', serif;
           color: #3d2b1f;
@@ -63,7 +62,7 @@
           text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
           font-size: 0.9em;
       }
-      .player-info { display: flex; align-items: center; gap: 8px; color: #3d2b1f; } /* Aumentei o gap */
+      .player-info { display: flex; align-items: center; gap: 8px; color: #3d2b1f; }
       .wow-icon-sm { font-size: 1.1em; color: #3d2b1f; }
       .chat-tabs { display: flex; gap: 2px; }
       .chat-tab {
@@ -91,7 +90,7 @@
           box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
           margin-top: -1px;
       }
-      .chat-controls { margin-bottom: 10px; display: flex; gap: 5px; }
+      .chat-controls { margin-bottom: 10px; display: flex; }
       .chat-controls input { flex: 1; }
       .chat-messages-area {
           height: 300px;
@@ -132,18 +131,17 @@
       }
       .wow-button:hover { background-color: #a80000; }
 
-      /* --- NOVO: ESTILO DO BOTÃO DE LIMPAR --- */
       #clear-chat-btn {
           background: none;
           border: none;
-          color: #5a3a22; /* Marrom escuro da borda */
+          color: #5a3a22; 
           cursor: pointer;
           font-size: 1em;
           padding: 0 5px;
           transition: color 0.2s;
       }
       #clear-chat-btn:hover {
-          color: #8B0000; /* Vermelho escuro ao passar o mouse */
+          color: #8B0000; 
       }
 
       .chat-messages-area::-webkit-scrollbar { width: 12px; }
@@ -157,49 +155,44 @@
     <main>
       <div class="chat-window-wrapper">
         <div class="chat-header-bar">
-            <div class="player-info">
-                <i class="fas fa-user wow-icon-sm"></i> <span id="user-count">1</span>
-                <button id="clear-chat-btn" title="Limpar chat atual">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-            <div class="chat-tabs">
-                <button class="chat-tab active" data-room="geral">General</button>
-                <button class="chat-tab" data-room="leilao">Auctioner</button> 
-                <button class="chat-tab" data-room="guilda">Guild</button>   
-                <button class="chat-tab" data-room="whisper">Whisper</button>
-            </div>
+          <div class="player-info">
+            <i class="fas fa-user wow-icon-sm"></i> <span id="user-count">1</span>
+            <button id="clear-chat-btn" title="Limpar chat atual">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+          <div class="chat-tabs">
+            <button class="chat-tab active" data-room="geral">General</button>
+            <button class="chat-tab" data-room="leilao">Auctioner</button> 
+            <button class="chat-tab" data-room="guilda">Guild</button> 
+            <button class="chat-tab" data-room="whisper">Whisper</button>
+          </div>
         </div>
         <div class="chat-panel">
-            <div class="row chat-controls">
-                <input id="room" placeholder="sala (ex: guilda)" />
-                <input id="username" placeholder="seu nome" />
-                <button id="connectBtn" class="wow-button">Conectar</button>
-            </div>
-            <div id="messages" class="chat-messages-area"></div>
-            <form id="form" autocomplete="off" class="chat-input-form">
-                <input id="input" type="text" placeholder="Digite sua mensagem..." class="chat-input-field" />
-                <button class="wow-button">Enviar</button>
-            </form>
+          <div class="row chat-controls">
+            <input id="username" placeholder="seu nome" />
+          </div>
+          <div id="messages" class="chat-messages-area"></div>
+          <form id="form" autocomplete="off" class="chat-input-form">
+            <input id="input" type="text" placeholder="Digite sua mensagem..." class="chat-input-field" />
+            <button class="wow-button">Enviar</button>
+          </form>
         </div>
       </div>
     </main>
     <script>
-      const $room = document.getElementById('room');
       const $username = document.getElementById('username');
       const $messages = document.getElementById('messages');
       const $form = document.getElementById('form');
       const $input = document.getElementById('input');
-      const $connectBtn = document.getElementById('connectBtn');
       const chatTabs = document.querySelectorAll('.chat-tab');
       const userCountSpan = document.getElementById('user-count');
-      const $clearChatBtn = document.getElementById('clear-chat-btn'); // --- NOVO ---
+      const $clearChatBtn = document.getElementById('clear-chat-btn'); 
 
-      $room.value = localStorage.getItem('room') || 'geral';
       $username.value = localStorage.getItem('username') || '';
 
       let ws = null;
-      let currentRoom = $room.value;
+      let currentRoom = localStorage.getItem('room') || 'geral';
       const chatHistoryCache = {};
 
       function appendSystemMessage(text) {
@@ -212,61 +205,100 @@
       }
 
       function appendMessage(item) {
+        if (!item || !item.room) return;
         if (item.room.toLowerCase().trim() !== currentRoom) return;
         const div = document.createElement('div');
         let iconClass = 'far fa-comment-dots';
-        if (item.content.toLowerCase().includes('changed channel')) iconClass = 'fas fa-exchange-alt';
-        else if (item.content.toLowerCase().includes('captured')) iconClass = 'fas fa-camera';
-        else if (item.content.toLowerCase().includes('item:')) iconClass = 'fas fa-star';
+        if (item.content && item.content.toLowerCase().includes('changed channel')) iconClass = 'fas fa-exchange-alt';
+        else if (item.content && item.content.toLowerCase().includes('captured')) iconClass = 'fas fa-camera';
+        else if (item.content && item.content.toLowerCase().includes('item:')) iconClass = 'fas fa-star';
         div.className = 'msg room-' + item.room.toLowerCase().trim();
-        const when = new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `<div class="message-line"><i class="${iconClass} wow-icon-sm msg-icon"></i><span class="meta">[${when}]</span><strong>${item.username}:</strong> <span class="message-content">${item.content}</span></div>`;
+        const when = item.created_at ? new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const usernameSafe = item.username || 'anon';
+        const contentSafe = item.content || '';
+        div.innerHTML = `<div class="message-line"><i class="${iconClass} wow-icon-sm msg-icon"></i><span class="meta">[${when}]</span><strong>${usernameSafe}:</strong> <span class="message-content">${contentSafe}</span></div>`;
         $messages.appendChild(div);
         $messages.scrollTop = $messages.scrollHeight;
       }
 
       function appendHistory(items) {
-        items.forEach(appendMessage);
+        (items || []).forEach(appendMessage);
       }
 
-      function connect() {
-        const room = ($room.value || 'geral').trim();
+      function connect(roomToConnect) {
+        const room = roomToConnect.trim().toLowerCase();
         const username = ($username.value || 'anon').trim();
-        if (!room || !username) return;
+
+        // salva histórico da sala atual antes de trocar
+        if (currentRoom) {
+          chatHistoryCache[currentRoom] = $messages.innerHTML;
+        }
+
         localStorage.setItem('room', room);
         localStorage.setItem('username', username);
-        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+
+        // atualiza abas para refletir a sala selecionada
+        chatTabs.forEach(t => t.classList.toggle('active', t.dataset.room === room));
+
         currentRoom = room;
-        
+
         if (chatHistoryCache[currentRoom]) {
             $messages.innerHTML = chatHistoryCache[currentRoom];
+            appendSystemMessage(`Você entrou no canal: [${room}] (histórico local carregado)`);
         } else {
             $messages.innerHTML = '';
             appendSystemMessage(`Você entrou no canal: [${room}]`);
         }
         $messages.scrollTop = $messages.scrollHeight;
 
-        const wsProto = location.protocol === 'https' ? 'wss' : 'ws';
-        const url = `${wsProto}://${location.host}/ws/${encodeURIComponent(room)}`;
-        ws = new WebSocket(url);
-        ws.onmessage = (evt) => {
-          const data = JSON.parse(evt.data);
-          if (data.type === 'history' && !chatHistoryCache[currentRoom]) appendHistory(data.items || []);
-          else if (data.type === 'message') appendMessage(data.item);
-          else if (data.type === 'user_count_update') userCountSpan.innerText = data.count;
-        };
-        ws.onopen = () => console.log(`WS conectado: ${room}`);
-        ws.onclose = () => console.log(`WS desconectado: ${room}`);
-        ws.onerror = (e) => console.error('WS erro', e);
-      }
+        // fecha ws anterior se houver
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+          try { ws.close(); } catch (e) { /* ignore */ }
+        }
 
-      $connectBtn.addEventListener('click', connect);
+        const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+        const url = `${wsProto}://${location.host}/ws/${encodeURIComponent(room)}`;
+        try {
+          ws = new WebSocket(url);
+        } catch (err) {
+          console.error('Erro criando WebSocket', err);
+          appendSystemMessage('Erro ao criar conexão WebSocket. Verifique se o servidor WS está rodando e o caminho /ws/:room está disponível.');
+          return;
+        }
+
+        ws.onmessage = (evt) => {
+          try {
+            const data = JSON.parse(evt.data);
+            if (data.type === 'history' && !chatHistoryCache[currentRoom]) appendHistory(data.items || []);
+            else if (data.type === 'message') appendMessage(data.item);
+            else if (data.type === 'user_count_update') userCountSpan.innerText = data.count;
+          } catch (e) {
+            console.error('Falha ao parsear mensagem WS', e);
+          }
+        };
+        ws.onopen = () => {
+          console.log(`WS conectado: ${room}`);
+          appendSystemMessage(`Conexão estabelecida com o servidor (${room}).`);
+        };
+        ws.onclose = () => {
+          console.log(`WS desconectado: ${room}`);
+          appendSystemMessage(`Conexão fechada para o canal [${room}].`);
+        };
+        ws.onerror = (e) => {
+          console.error('WS erro', e);
+          appendSystemMessage('Erro na conexão WebSocket (veja console).');
+        };
+      }
 
       $form.addEventListener('submit', (e) => {
         e.preventDefault();
         const content = $input.value.trim();
-        if (!content || !ws || ws.readyState !== WebSocket.OPEN) return;
-        ws.send(JSON.stringify({ content, username: $username.value, room: $room.value }));
+        if (!content || !ws || ws.readyState !== WebSocket.OPEN) {
+          appendSystemMessage('Mensagem não enviada. Verifique a conexão.');
+          return;
+        }
+        // Ao enviar, usa a variável 'currentRoom' que está sempre atualizada
+        ws.send(JSON.stringify({ content, username: $username.value || 'anon', room: currentRoom }));
         $input.value = '';
       });
 
@@ -279,27 +311,23 @@
               appendSystemMessage(`Você saiu do canal: [${previousRoom}]`);
               chatHistoryCache[previousRoom] = $messages.innerHTML;
 
-              $room.value = selectedRoom;
-              chatTabs.forEach(t => t.classList.remove('active'));
-              tab.classList.add('active');
-              connect();
+              // Troca a sala e reconecta
+              connect(selectedRoom);
           });
       });
+      
+      $username.addEventListener('change', () => {
+          localStorage.setItem('username', $username.value);
+      });
 
-      // --- NOVO: LÓGICA DO BOTÃO DE LIMPAR ---
       $clearChatBtn.addEventListener('click', () => {
-          // 1. Limpa a janela de mensagens visível
           $messages.innerHTML = '';
-          
-          // 2. Limpa o histórico salvo no cache para a sala atual
           delete chatHistoryCache[currentRoom];
-          // ou chatHistoryCache[currentRoom] = '';
-
-          // 3. Mostra uma mensagem de confirmação
           appendSystemMessage(`Histórico do canal [${currentRoom}] foi limpo.`);
       });
 
-      connect();
+      // conecta automaticamente na sala salva (ou 'geral') ao carregar a página
+      connect(currentRoom);
     </script>
   </body>
 </html>

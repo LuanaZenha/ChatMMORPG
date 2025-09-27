@@ -15,7 +15,6 @@ async def ws_room(ws: WebSocket, room: str):
     """
     await manager.connect(room, ws)
     try:
-        # histórico inicial (últimas 20)
         cursor = get_db()["messages"].find({"room": room}).sort("_id", -1).limit(20)
         items = [serialize_mongo(d) async for d in cursor]
         items.reverse()
@@ -23,15 +22,13 @@ async def ws_room(ws: WebSocket, room: str):
 
         while True:
             payload = await ws.receive_json()
-            # Valida com Pydantic para garantir conteúdo/username válidos
             try:
                 data = MessageIn.model_validate({
                     "username": payload.get("username", "anon"),
                     "content": payload.get("content", ""),
                 })
             except Exception:
-                # Ignora mensagens inválidas silenciosamente no canal WS
-                # (mantemos a API REST com erros explícitos)
+
                 continue
 
             doc = {

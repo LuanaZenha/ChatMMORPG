@@ -28,7 +28,6 @@ async def get_messages(
     docs.reverse()
 
     next_cursor = docs[0]["_id"] if docs else None
-    # Usa MessageOut para garantir formato consistente de saída
     items = [MessageOut.model_validate(d).model_dump(by_alias=True) for d in docs]
     return {"items": items, "next_cursor": next_cursor}
 
