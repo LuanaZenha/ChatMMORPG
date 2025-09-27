@@ -102,12 +102,6 @@ Receba notificações de entrada/saída.
 
 Experimente o estilo pergaminho medieval na interface.
 
-📷 Screenshot
-## 📷 Screenshot
-
-![Screenshot do Chat](./chat.png)
-
-
 📌 Próximos Passos
 Melhorar design do front-end (animações e sons de RPG).
 
