@@ -109,6 +109,6 @@ Adicionar suporte a emojis e markdown.
 
 Criar sistema de login com personagens.
 
-👤 Autor: Seu Nome Aqui
-📧 Contato: seu-email@exemplo.com
+👤 Autor: Luana
+📧 Contato: luana-zenha@hotmail.com
 
