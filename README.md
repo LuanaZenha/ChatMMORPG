@@ -100,15 +100,6 @@ Converse em tempo real com outros usuários.
 
 Receba notificações de entrada/saída.
 
-Experimente o estilo pergaminho medieval na interface.
-
-📌 Próximos Passos
-Melhorar design do front-end (animações e sons de RPG).
-
-Adicionar suporte a emojis e markdown.
-
-Criar sistema de login com personagens.
-
 👤 Autor: Luana
 📧 Contato: luana-zenha@hotmail.com
 
