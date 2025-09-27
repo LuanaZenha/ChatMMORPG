@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat RPG Online</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Merriweather:ital@0;1&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+      /* --- TEMA: PERGAMINHO ANTIGO / DIÁRIO DE AVENTURA --- */
+      body {
+          font-family: 'Merriweather', serif;
+          color: #3d2b1f;
+          background-image: url('https://www.transparenttextures.com/patterns/old-paper.png');
+          background-color: #e8dcb5;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+      }
+      h1 {
+          font-family: 'IM Fell English SC', serif;
+          color: #3d2b1f;
+          text-align: center;
+          padding-top: 20px;
+          margin-bottom: 0;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+          font-size: 2.5em;
+      }
+      main {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 85vh;
+          padding: 20px;
+          box-sizing: border-box;
+      }
+      .chat-window-wrapper {
+          width: 500px;
+          max-width: 90%;
+          background-color: #c9a979;
+          border: 2px solid #5a3a22;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.3);
+          position: relative;
+          display: flex;
+          flex-direction: column;
+      }
+      .chat-header-bar, .chat-tab {
+          font-family: 'IM Fell English SC', serif;
+      }
+      .chat-header-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 5px 10px;
+          background: rgba(90, 58, 34, 0.3);
+          border-bottom: 1px solid rgba(90, 58, 34, 0.5);
+          color: #3d2b1f;
+          text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
+          font-size: 0.9em;
+      }
+      .player-info { display: flex; align-items: center; gap: 8px; color: #3d2b1f; } /* Aumentei o gap */
+      .wow-icon-sm { font-size: 1.1em; color: #3d2b1f; }
+      .chat-tabs { display: flex; gap: 2px; }
+      .chat-tab {
+          background-color: rgba(90, 58, 34, 0.5);
+          border: 1px solid rgba(90, 58, 34, 0.7);
+          border-bottom: none;
+          color: #f0e5c2;
+          padding: 5px 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border-radius: 4px 4px 0 0;
+      }
+      .chat-tab:hover { background-color: rgba(90, 58, 34, 0.7); }
+      .chat-tab.active {
+          background-color: #e8dcb5;
+          color: #3d2b1f;
+          border-color: #5a3a22;
+          z-index: 1;
+          position: relative;
+      }
+      .chat-panel {
+          flex-grow: 1;
+          padding: 15px;
+          background-color: #e8dcb5;
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+          margin-top: -1px;
+      }
+      .chat-controls { margin-bottom: 10px; display: flex; gap: 5px; }
+      .chat-controls input { flex: 1; }
+      .chat-messages-area {
+          height: 300px;
+          overflow-y: auto;
+          padding-right: 5px;
+          flex-grow: 1;
+      }
+      .msg { margin: 5px 0; line-height: 1.5; word-wrap: break-word; }
+      .meta { color: #8c6b52; font-size: 0.85em; margin-right: 5px; }
+      .msg strong { color: #8B0000; }
+      .message-content { color: #3d2b1f; }
+      .msg-icon { color: #8c6b52; margin-right: 8px; }
+      .message-line { display: flex; align-items: flex-start; flex-grow: 1; }
+      
+      .msg.room-leilao strong, .msg.room-leilao .message-content { color: #E5B80B; }
+      .msg.room-guilda strong, .msg.room-guilda .message-content { color: #008000; }
+      .msg.room-whisper { font-style: italic; }
+      .msg.room-whisper strong, .msg.room-whisper .message-content { color: #ff80ff; }
+      .msg.system-message .message-content { color: #8c6b52; font-style: italic; }
+      
+      .chat-input-form { margin-top: 10px; display: flex; gap: 5px; }
+      .chat-input-field, .wow-button, .chat-controls input, .chat-controls button {
+          font-family: 'Merriweather', serif;
+          background-color: rgba(216, 198, 152, 0.7);
+          border: none;
+          border-bottom: 1px solid #a0825f;
+          color: #3d2b1f;
+          border-radius: 2px;
+          padding: 8px 12px;
+      }
+      .chat-input-field:focus, .chat-controls input:focus { outline: none; border-bottom: 1px solid #8B0000; }
+      .wow-button {
+          background-color: #8B0000;
+          color: #f0e5c2;
+          cursor: pointer;
+          font-family: 'IM Fell English SC', serif;
+          border: none;
+      }
+      .wow-button:hover { background-color: #a80000; }
+
+      /* --- NOVO: ESTILO DO BOTÃO DE LIMPAR --- */
+      #clear-chat-btn {
+          background: none;
+          border: none;
+          color: #5a3a22; /* Marrom escuro da borda */
+          cursor: pointer;
+          font-size: 1em;
+          padding: 0 5px;
+          transition: color 0.2s;
+      }
+      #clear-chat-btn:hover {
+          color: #8B0000; /* Vermelho escuro ao passar o mouse */
+      }
+
+      .chat-messages-area::-webkit-scrollbar { width: 12px; }
+      .chat-messages-area::-webkit-scrollbar-track { background: #d8c698; }
+      .chat-messages-area::-webkit-scrollbar-thumb { background: #8c6b52; border: 1px solid #5a3a22; }
+      .chat-messages-area::-webkit-scrollbar-thumb:hover { background: #a0825f; }
+    </style>
+  </head>
+  <body>
+    <h1>Chat MMORPG</h1>
+    <main>
+      <div class="chat-window-wrapper">
+        <div class="chat-header-bar">
+            <div class="player-info">
+                <i class="fas fa-user wow-icon-sm"></i> <span id="user-count">1</span>
+                <button id="clear-chat-btn" title="Limpar chat atual">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+            <div class="chat-tabs">
+                <button class="chat-tab active" data-room="geral">General</button>
+                <button class="chat-tab" data-room="leilao">Auctioner</button> 
+                <button class="chat-tab" data-room="guilda">Guild</button>   
+                <button class="chat-tab" data-room="whisper">Whisper</button>
+            </div>
+        </div>
+        <div class="chat-panel">
+            <div class="row chat-controls">
+                <input id="room" placeholder="sala (ex: guilda)" />
+                <input id="username" placeholder="seu nome" />
+                <button id="connectBtn" class="wow-button">Conectar</button>
+            </div>
+            <div id="messages" class="chat-messages-area"></div>
+            <form id="form" autocomplete="off" class="chat-input-form">
+                <input id="input" type="text" placeholder="Digite sua mensagem..." class="chat-input-field" />
+                <button class="wow-button">Enviar</button>
+            </form>
+        </div>
+      </div>
+    </main>
+    <script>
+      const $room = document.getElementById('room');
+      const $username = document.getElementById('username');
+      const $messages = document.getElementById('messages');
+      const $form = document.getElementById('form');
+      const $input = document.getElementById('input');
+      const $connectBtn = document.getElementById('connectBtn');
+      const chatTabs = document.querySelectorAll('.chat-tab');
+      const userCountSpan = document.getElementById('user-count');
+      const $clearChatBtn = document.getElementById('clear-chat-btn'); // --- NOVO ---
+
+      $room.value = localStorage.getItem('room') || 'geral';
+      $username.value = localStorage.getItem('username') || '';
+
+      let ws = null;
+      let currentRoom = $room.value;
+      const chatHistoryCache = {};
+
+      function appendSystemMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'msg system-message';
+        const when = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<div class="message-line"><i class="fas fa-info-circle wow-icon-sm msg-icon"></i><span class="meta">[${when}]</span><span class="message-content">${text}</span></div>`;
+        $messages.appendChild(div);
+        $messages.scrollTop = $messages.scrollHeight;
+      }
+
+      function appendMessage(item) {
+        if (item.room.toLowerCase().trim() !== currentRoom) return;
+        const div = document.createElement('div');
+        let iconClass = 'far fa-comment-dots';
+        if (item.content.toLowerCase().includes('changed channel')) iconClass = 'fas fa-exchange-alt';
+        else if (item.content.toLowerCase().includes('captured')) iconClass = 'fas fa-camera';
+        else if (item.content.toLowerCase().includes('item:')) iconClass = 'fas fa-star';
+        div.className = 'msg room-' + item.room.toLowerCase().trim();
+        const when = new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<div class="message-line"><i class="${iconClass} wow-icon-sm msg-icon"></i><span class="meta">[${when}]</span><strong>${item.username}:</strong> <span class="message-content">${item.content}</span></div>`;
+        $messages.appendChild(div);
+        $messages.scrollTop = $messages.scrollHeight;
+      }
+
+      function appendHistory(items) {
+        items.forEach(appendMessage);
+      }
+
+      function connect() {
+        const room = ($room.value || 'geral').trim();
+        const username = ($username.value || 'anon').trim();
+        if (!room || !username) return;
+        localStorage.setItem('room', room);
+        localStorage.setItem('username', username);
+        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+        currentRoom = room;
+        
+        if (chatHistoryCache[currentRoom]) {
+            $messages.innerHTML = chatHistoryCache[currentRoom];
+        } else {
+            $messages.innerHTML = '';
+            appendSystemMessage(`Você entrou no canal: [${room}]`);
+        }
+        $messages.scrollTop = $messages.scrollHeight;
+
+        const wsProto = location.protocol === 'https' ? 'wss' : 'ws';
+        const url = `${wsProto}://${location.host}/ws/${encodeURIComponent(room)}`;
+        ws = new WebSocket(url);
+        ws.onmessage = (evt) => {
+          const data = JSON.parse(evt.data);
+          if (data.type === 'history' && !chatHistoryCache[currentRoom]) appendHistory(data.items || []);
+          else if (data.type === 'message') appendMessage(data.item);
+          else if (data.type === 'user_count_update') userCountSpan.innerText = data.count;
+        };
+        ws.onopen = () => console.log(`WS conectado: ${room}`);
+        ws.onclose = () => console.log(`WS desconectado: ${room}`);
+        ws.onerror = (e) => console.error('WS erro', e);
+      }
+
+      $connectBtn.addEventListener('click', connect);
+
+      $form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const content = $input.value.trim();
+        if (!content || !ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ content, username: $username.value, room: $room.value }));
+        $input.value = '';
+      });
+
+      chatTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+              const selectedRoom = tab.dataset.room;
+              const previousRoom = currentRoom;
+              if (selectedRoom === previousRoom) return;
+              
+              appendSystemMessage(`Você saiu do canal: [${previousRoom}]`);
+              chatHistoryCache[previousRoom] = $messages.innerHTML;
+
+              $room.value = selectedRoom;
+              chatTabs.forEach(t => t.classList.remove('active'));
+              tab.classList.add('active');
+              connect();
+          });
+      });
+
+      // --- NOVO: LÓGICA DO BOTÃO DE LIMPAR ---
+      $clearChatBtn.addEventListener('click', () => {
+          // 1. Limpa a janela de mensagens visível
+          $messages.innerHTML = '';
+          
+          // 2. Limpa o histórico salvo no cache para a sala atual
+          delete chatHistoryCache[currentRoom];
+          // ou chatHistoryCache[currentRoom] = '';
+
+          // 3. Mostra uma mensagem de confirmação
+          appendSystemMessage(`Histórico do canal [${currentRoom}] foi limpo.`);
+      });
+
+      connect();
+    </script>
+  </body>
+</html>
